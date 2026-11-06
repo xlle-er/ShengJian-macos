@@ -14,6 +14,12 @@ A native macOS app for live subtitles: it turns system audio or your microphone 
 
 不会自动开始采音；保存字幕与录音默认关闭。API Key 只保存在本机。
 
+## 下载与安装
+
+1. 从 [Releases](https://github.com/xlle-er/ShengJian-macos/releases/latest) 下载 `ShengJian-<版本>.zip`，解压后把“声笺”拖进“应用程序”文件夹。
+2. 安装包未经 Apple 公证，第一次打开时 macOS 会提示无法验证开发者：在“系统设置 → 隐私与安全性”底部点击“仍要打开”。
+3. 之后的版本可在 声笺 →“通用 → 软件更新”中检查并安装；每个安装包都带 Ed25519 签名，声笺校验通过后才会替换自身。更新后 macOS 可能会再次请求音频采集权限。
+
 ## 系统要求
 
 - macOS 13 或更新版本；Apple 本地识别和翻译需要 Apple 芯片、macOS 26+ 并下载所选语言。
@@ -34,7 +40,7 @@ SHENG_BUILD_CONFIGURATION=debug ./script/build_and_run.sh --build-only   # 快�
 
 签名：默认使用本机已有的 Apple Development 证书，也可用 `SHENG_CODESIGN_IDENTITY` 指定。没有证书时设置 `SHENG_ALLOW_ADHOC=1` 做临时签名，但每次重建后可能需要重新授权音频采集。脚本不会创建证书或修改钥匙串。
 
-目前没有正式发布版本与自动更新。
+发布构建：`./script/release.sh` 生成 Universal 安装包与更新签名（需要本机的更新签名私钥，见 `script/update_signing.swift`）。
 
 ## 许可
 

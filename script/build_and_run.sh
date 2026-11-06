@@ -6,6 +6,13 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 APP_NAME="ShengJian"
 BUNDLE_ID="app.xlle.shengjian"
+APP_VERSION="${SHENG_APP_VERSION:-$(tr -d '[:space:]' < "$ROOT_DIR/VERSION")}"
+if ! [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "VERSION must look like 1.2.3 (got '$APP_VERSION')." >&2; exit 2; fi
+IFS=. read -r V_MAJOR V_MINOR V_PATCH <<< "$APP_VERSION"
+BUILD_NUMBER="${SHENG_BUILD_NUMBER:-$((V_MAJOR * 10000 + V_MINOR * 100 + V_PATCH))}"
+# The in-app updater reads GitHub Releases of this repository and checks archives against this key.
+UPDATE_REPOSITORY="xlle-er/ShengJian-macos"
+UPDATE_PUBLIC_KEY="$(tr -d '[:space:]' < "$ROOT_DIR/Resources/update-public-key.txt")"
 SDK_DIR="$ROOT_DIR/Vendor/SharedKit"
 if [ ! -f "$SDK_DIR/Package.swift" ]; then echo "Initialize submodules: git submodule update --init --recursive" >&2; exit 1; fi
 export CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache"
@@ -80,8 +87,10 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <key>CFBundleIconFile</key><string>AppIcon</string>
 <key>NSAccentColorName</key><string>AccentColor</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>0.1.0</string>
-<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
+<key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
+<key>ShengUpdateRepository</key><string>$UPDATE_REPOSITORY</string>
+<key>ShengUpdatePublicKey</key><string>$UPDATE_PUBLIC_KEY</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSPrincipalClass</key><string>NSApplication</string>
 <key>NSMicrophoneUsageDescription</key><string>仅在你选择麦克风并开启字幕时采集声音。</string>

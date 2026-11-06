@@ -11,3 +11,4 @@ dist/
 *.p12
 *.pfx
 node_modules/
+RELEASE_NOTES.md
