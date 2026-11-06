@@ -21,11 +21,19 @@ if /usr/bin/strings dist/ShengJian.app/Contents/MacOS/ShengJian | /usr/bin/grep 
   echo "The binary still contains local paths; not packaging." >&2; exit 1
 fi
 mkdir -p "$OUT"
-rm -f "$ARCHIVE" "$ARCHIVE.sig"
+rm -f "$ARCHIVE" "$ARCHIVE.sig" "$OUT/update.json"
 /usr/bin/ditto -c -k --sequesterRsrc --keepParent dist/ShengJian.app "$ARCHIVE"
 swift script/update_signing.swift sign "$ARCHIVE" >/dev/null
+# update.json lets the app find this release without GitHub's rate-limited API.
+NOTES_FILE="$ROOT/RELEASE_NOTES.md"
+/usr/bin/python3 -I - "$VERSION" "$(basename "$ARCHIVE")" "$(stat -f %z "$ARCHIVE")" "$NOTES_FILE" "$OUT/update.json" <<'PY'
+import json, os, sys
+version, archive, size, notes_file, out = sys.argv[1:]
+notes = open(notes_file, encoding="utf-8").read().split("\n---", 1)[0].strip() if os.path.exists(notes_file) else ""
+json.dump({"version": version, "archive": archive, "size": int(size), "notes": notes}, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+PY
 shasum -a 256 "$ARCHIVE"
 if [ "${1:-}" = --publish ]; then
   [ -f RELEASE_NOTES.md ] || { echo "Write RELEASE_NOTES.md first." >&2; exit 1; }
-  gh release create "v$VERSION" "$ARCHIVE" "$ARCHIVE.sig" --repo xlle-er/ShengJian-macos --title "声笺 $VERSION" --notes-file RELEASE_NOTES.md
+  gh release create "v$VERSION" "$ARCHIVE" "$ARCHIVE.sig" "$OUT/update.json" --repo xlle-er/ShengJian-macos --title "声笺 $VERSION" --notes-file RELEASE_NOTES.md
 fi
