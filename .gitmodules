@@ -1,0 +1,3 @@
+[submodule "Vendor/SharedKit"]
+	path = Vendor/SharedKit
+	url = https://github.com/xlle-er/Sheng-Kit.git
